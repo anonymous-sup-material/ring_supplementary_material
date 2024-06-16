@@ -1,0 +1,24 @@
+<x_xy model="branched">
+    <options gravity="0 0 9.81" dt="0.01"/>
+    <defaults>
+        <geom type="box" mass="10" pos="0.5 0 0" dim="1 0.25 0.2" edge_color="black" color="white"/>
+        <body pos="1 0 0" joint="rz"/>
+    </defaults>
+    <worldbody>
+        <body name="0th" pos="0 0 0" euler="0 90 0" joint="free">
+            <geom/>
+            <body name="1st">
+                <geom/>
+            </body>
+            <body name="2nd" joint="rx">
+                <geom/>
+                <body name="3rd">
+                    <geom/>
+                </body>
+                <body name="4th" joint="ry">
+                    <geom/>
+                </body>
+            </body>
+        </body>
+    </worldbody>
+</x_xy>

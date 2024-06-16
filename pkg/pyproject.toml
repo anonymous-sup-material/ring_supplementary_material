@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "imt-ring"
+version = "1.0.0"
+authors = [
+  { name="Marie Curie", email="marie@curie.com" },
+]
+description = "RING: Recurrent Inertial Graph-based Estimator"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "jaxlib",
+    "jax",
+    "jaxopt",
+    "numpy<2.0",
+    "flax",
+    "tqdm",
+    "wget",
+    "h5py",
+    "imt-tree-utils",
+    "wandb",
+    "optax",
+    "dm-haiku",
+    "joblib",
+    "pyyaml",
+    "qmt",
+    "scipy",
+    "pandas",
+    "onnxruntime",
+    "fire",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"ring.io.examples" = ["**/*.xml"]
+"ring.ml.params" = ["**/*.pickle"]
