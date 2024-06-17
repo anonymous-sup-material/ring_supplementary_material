@@ -5,7 +5,7 @@ This repository contains the coda and data (data is only used for evaluation, no
 - Retrain the RING network from scratch.
 - Recreate all published experimental validation results of RING and the comparison SOTA methods.
 
-## Installation
+# Installation
 These are the installation steps of the `ring` Python package.
 1) Create virtual Python environment with Python >= 3.10
 2) cd into `pkg` folder
@@ -13,7 +13,38 @@ These are the installation steps of the `ring` Python package.
 
 Note: This installs jax as cpu-only, if you have a GPU you may want to install the gpu-enabled version.
 
-## Training
+# Application of `RING`
+After the installation steps, `RING` can be used for inertial motion tracking.
+```python
+import ring
+import numpy as np
+
+T  : int       = 30        # sequence length     [s]
+Ts : float     = 0.01      # sampling interval   [s]
+B  : int       = 1         # batch size
+lam: list[int] = [0, 1, 2] # parent array
+N  : int       = len(lam)  # number of bodies
+T_i: int       = int(T/Ts) # number of timesteps
+
+X              = np.zeros((B, T_i, N, 9))
+# where X is structured as follows:
+# X[..., :3]   = acc
+# X[..., 3:6]  = gyr
+# X[..., 6:9]  = jointaxis
+
+# let's assume we have an IMU on each outer segment of the
+# three-segment kinematic chain
+X[..., 0, :3]  = acc_segment1
+X[..., 2, :3]  = acc_segment3
+X[..., 0, 3:6] = gyr_segment1
+X[..., 2, 3:6] = gyr_segment3
+
+ringnet = ring.RING(lam, Ts)
+yhat, _ = ringnet.apply(X)
+# yhat: unit quaternions, shape = (B, T_i, N, 4)
+```
+
+# Retraining of `RING`
 
 After the installation steps, you can use the two files `train_*.py` to
 1) Create training data. Usage: `python train_step1_generateData.py CONFIG OUTPUT_PATH SIZE SEED SAMPLING_RATES ANCHORS` where
@@ -43,7 +74,7 @@ Example: `python train_step2_trainRing.py 2 10 ring_data params/trained --dry-ru
 
 For retraining of RING: `python train_step2_trainRing.py 512 4800 ~/ring_data ~/params/trained_ring_params.pickle`
 
-## Evaluation
+# Recompute Validation Metrices
 
 After the installation steps, you can use the files `eval_*.py` to recreate the experimental validation results published in the paper. Just execute them and they will print the metrices of RING and SOTA methods to the stdout.
 
