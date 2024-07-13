@@ -1,6 +1,5 @@
 import numpy as np
 import qmt
-
 from ring.ml import base as ml_base
 
 from .riann import RIANN
@@ -54,6 +53,7 @@ class TwoSeg1D(ml_base.AbstractFilterUnbatched):
 
         T, N, F = X.shape
         assert N == 2
+        assert F == 10 or F == 7
         assert tuple(lam) == (-1, 0)
         dt = float(X[0, 0, -1])
         acc1, acc2 = X[:, 0, :3], X[:, 1, :3]
