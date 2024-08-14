@@ -60,13 +60,14 @@ class TwoSeg1D(ml_base.AbstractFilterUnbatched):
         gyr1, gyr2 = X[:, 0, 3:6], X[:, 1, 3:6]
 
         if self.ollson:
-            axis = qmt.jointAxisEstHingeOlsson(
+            axis_imu1, axis_imu2 = qmt.jointAxisEstHingeOlsson(
                 acc1,
                 acc2,
                 gyr1,
                 gyr2,
                 estSettings=dict(quiet=True),
-            )[0][:, 0]
+            )
+            axis = axis_imu1[:, 0]
         else:
             assert F == 10
             axis = X[0, 1, 6:9]
@@ -81,13 +82,13 @@ class TwoSeg1D(ml_base.AbstractFilterUnbatched):
             ts,
             axis,
             None,
-            estSettings=dict(constraint=self.method),
+            estSettings=dict(constraint=self.method, windowTime=min(8.0, ts[-1])),
         )[0]
 
         # NOTE CONVENTION !!
         quats = qmt.qinv(quats)
         quats = _absolute_to_relative_orientations(quats, lam)
-        return quats, state
+        return quats, {"axis": axis}
 
 
 def _absolute_to_relative_orientations(quats, lam):
