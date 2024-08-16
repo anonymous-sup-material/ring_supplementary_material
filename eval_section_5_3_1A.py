@@ -1,10 +1,9 @@
+import numpy as np
+import ring
+
 import baselines
 from data import benchmark
 from data import IMTP
-import numpy as np
-import tqdm
-
-import ring
 
 _LPF_CUTOFF_FREQ = 5.0
 methods = [
@@ -32,12 +31,11 @@ methods = [
     ring.RING([-1, 0], 0.01),
 ]
 method_names = ["1d_corr_ollson_0", "euler_1d_ollson_0", "VQF_9D", "RING"]
-maes = {name: [] for name in method_names}
 
-for i in tqdm.tqdm(range(2, 5)):
-    for method, method_name in tqdm.tqdm(
-        zip(methods, method_names), leave=False, total=len(methods)
-    ):
+
+def eval_section_5_3_1A(method, method_name) -> list[float]:
+    mae = []
+    for i in range(2, 5):
         imtp = IMTP(
             [f"seg{i}", f"seg{i + 1}"],
             joint_axes=True,
@@ -48,8 +46,11 @@ for i in tqdm.tqdm(range(2, 5)):
         )
         for trial in [1, 2]:
             errors, *_ = benchmark(imtp, trial, method, warmup=5.0)
-            maes[method_name].append(errors[f"seg{i}"]["mae"])
+            mae.append(errors[f"seg{i}"]["mae"])
+    return mae
 
-for name in method_names:
-    mae = maes[name]
-    print(f"Method `{name}` achieved {np.mean(mae)} +/- {np.std(mae)}")
+
+if __name__ == "__main__":
+    for method, method_name in zip(methods, method_names):
+        mae = eval_section_5_3_1A(method, method_name)
+        print(f"Method `{method_name}` achieved {np.mean(mae)} +/- {np.std(mae)}")

@@ -1,17 +1,21 @@
+import numpy as np
+import ring
+from ring.ml.base import AbstractFilter
+
 import baselines
 from data import benchmark
 from data import IMTP
-import numpy as np
-import tqdm
 
-import ring
 
-ringnet = ring.RING([-1, 0, 1], 0.01)
-method_names = ["RNNO", "RING"]
-maes = {name: [] for name in method_names}
+def eval_section_5_2_4(method: AbstractFilter, method_name) -> list[float]:
+    mae = []
+    for i in range(2, 4):
+        mode = method.search_attr("mode")
+        if i == 2:
+            mode("xy")
+        else:
+            mode("yz")
 
-for i in tqdm.tqdm(range(2, 4)):
-    for method_name in tqdm.tqdm(method_names, leave=False, total=len(method_names)):
         imtp = IMTP(
             [f"seg{i}", f"seg{i + 1}", f"seg{i + 2}"],
             joint_axes=True if method_name == "RING" else False,
@@ -19,22 +23,31 @@ for i in tqdm.tqdm(range(2, 4)):
             dt=False,
             sparse=True,
         )
-        if method_name == "RING":
-            method = ringnet
-        elif i == 2:
-            method = baselines.RNNO_v2_xy
-
-        elif i == 3:
-            method = baselines.RNNO_v2_yz
-        else:
-            raise NotImplementedError
-
         for trial in [1, 2]:
             errors, *_ = benchmark(imtp, trial, method, warmup=5.0)
-            maes[method_name].extend(
-                [errors[f"seg{i + 1}"]["mae"], errors[f"seg{i + 2}"]["mae"]]
-            )
+            mae.extend([errors[f"seg{i + 1}"]["mae"], errors[f"seg{i + 2}"]["mae"]])
+    return mae
 
-for name in method_names:
-    mae = maes[name]
-    print(f"Method `{name}` achieved {np.mean(mae)} +/- {np.std(mae)}")
+
+class XY_YZ_Wrapper(ring.ml.base.AbstractFilterWrapper):
+    def __init__(self, filters: dict[str, AbstractFilter], name=None) -> None:
+        super().__init__(None, name)
+        self.filters = filters
+
+    def mode(self, mode: str):
+        super().__init__(self.filters[mode])
+
+
+ringnet = ring.RING([-1, 0, 1], 0.01)
+methods = [
+    XY_YZ_Wrapper({"xy": baselines.RNNO_v2_xy, "yz": baselines.RNNO_v2_yz}),
+    XY_YZ_Wrapper(dict(xy=ringnet, yz=ringnet)),
+]
+method_names = ["RNNO", "RING"]
+
+
+if __name__ == "__main__":
+
+    for method, method_name in zip(methods, method_names):
+        mae = eval_section_5_2_4(method, method_name)
+        print(f"Method `{method_name}` achieved {np.mean(mae)} +/- {np.std(mae)}")

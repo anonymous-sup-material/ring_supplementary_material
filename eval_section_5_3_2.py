@@ -1,18 +1,18 @@
+import numpy as np
+import ring
+
 from data import benchmark
 from data import IMTP
-import numpy as np
-import tqdm
-
-import ring
 
 # TODO: Investigate why the 100Hz-RING is outperformed here by the sampling rate
 # adaptive version
-ringnet = ring.RING([-1, 0, 1], None)
+methods = [ring.RING([-1, 0, 1], None)]
 method_names = ["RING"]
-maes = {name: [] for name in method_names}
 
-for i in tqdm.tqdm(range(2, 4)):
-    for method_name in tqdm.tqdm(method_names, leave=False, total=len(method_names)):
+
+def eval_section_5_3_2(method, method_name) -> list[float]:
+    mae = []
+    for i in range(2, 4):
         imtp = IMTP(
             [f"seg{i}", f"seg{i + 1}", f"seg{i + 2}"],
             joint_axes=False,
@@ -22,11 +22,13 @@ for i in tqdm.tqdm(range(2, 4)):
         )
 
         for trial in [1, 2]:
-            errors, *_ = benchmark(imtp, trial, ringnet, warmup=5.0)
-            maes[method_name].extend(
-                [errors[f"seg{i + 1}"]["mae"], errors[f"seg{i + 2}"]["mae"]]
-            )
+            errors, *_ = benchmark(imtp, trial, method, warmup=5.0)
+            mae.extend([errors[f"seg{i + 1}"]["mae"], errors[f"seg{i + 2}"]["mae"]])
 
-for name in method_names:
-    mae = maes[name]
-    print(f"Method `{name}` achieved {np.mean(mae)} +/- {np.std(mae)}")
+    return mae
+
+
+if __name__ == "__main__":
+    for method, method_name in zip(methods, method_names):
+        mae = eval_section_5_3_2(method, method_name)
+        print(f"Method `{method_name}` achieved {np.mean(mae)} +/- {np.std(mae)}")
