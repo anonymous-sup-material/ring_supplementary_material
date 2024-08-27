@@ -29,5 +29,5 @@ method_names = [m.unwrapped.name for m in methods[:-1]] + ["RING"]
 if __name__ == "__main__":
 
     for method, method_name in zip(methods, method_names):
-        mae = eval_section_5_2_1(method)
+        mae = eval_section_5_2_1(method, method_name)
         print(f"Method `{method_name}` achieved {np.mean(mae)} +/- {np.std(mae)}")

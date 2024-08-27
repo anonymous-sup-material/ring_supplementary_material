@@ -22,7 +22,8 @@ import numpy as np
 T  : int       = 30        # sequence length     [s]
 Ts : float     = 0.01      # sampling interval   [s]
 B  : int       = 1         # batch size
-lam: list[int] = [0, 1, 2] # parent array
+# in python counting begins at 0, in this convention the label of the base body changes from 0 to -1
+lam: list[int] = [-1, 0, 1] # parent array
 N  : int       = len(lam)  # number of bodies
 T_i: int       = int(T/Ts) # number of timesteps
 
